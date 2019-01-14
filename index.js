@@ -102,6 +102,7 @@ function writeElmFile(config, assets, callback) {
   const { outputPath, moduleNamespace } = config;
   fs.mkdirpSync(path.join(outputPath, moduleNamespace));
   var template = handlebars.compile(elmTemplate);
+  var moduleName = (moduleNamespace && moduleNamespace != "") ? moduleNamespace + ".Assets" : "Assets";
   var out = template({ moduleName: moduleNamespace + ".Assets", assets });
   fs.writeFile(
     path.join(outputPath, moduleNamespace, "Assets.elm"),
