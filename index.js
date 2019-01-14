@@ -11,6 +11,7 @@ function collectAssets(config, callback) {
   const {
     assetsPath,
     replacePath,
+    outputFile,
     buildUrl
   } = config;
   let assets = [];
@@ -23,19 +24,20 @@ function collectAssets(config, callback) {
         const copyTo = replacePath(copyFrom);
         const hash = md5.sync(copyFrom);
         const urlWithHash = buildUrl(copyTo, hash);
+        const fileDestination = outputFile(copyTo, hash);
         const elmName = createElmName(copyTo);
-        copyAsset(copyFrom, urlWithHash, config);
+        copyAsset(copyFrom, fileDestination, config);
         assets.push({ urlWithHash, elmName });
       },
       () => {
         var sortedAssets =
-            assets.sort(function(a, b) {
-              if (a.elmName < b.elmName)
-                return -1;
-              if (a.elmName > b.elmName)
-                return 1;
-              return 0;
-            });
+          assets.sort(function (a, b) {
+            if (a.elmName < b.elmName)
+              return -1;
+            if (a.elmName > b.elmName)
+              return 1;
+            return 0;
+          });
         checkForDuplications(sortedAssets, callback)
       }
     );
@@ -103,11 +105,11 @@ function writeElmFile(config, assets, callback) {
   fs.mkdirpSync(path.join(outputPath, moduleNamespace));
   var template = handlebars.compile(elmTemplate);
   var moduleName = (moduleNamespace && moduleNamespace != "") ? moduleNamespace + ".Assets" : "Assets";
-  var out = template({ moduleName: moduleNamespace + ".Assets", assets });
+  var out = template({ moduleName, assets });
   fs.writeFile(
     path.join(outputPath, moduleNamespace, "Assets.elm"),
     out,
-    function(err) {
+    function (err) {
       if (err) callback(err);
       callback(
         null,
